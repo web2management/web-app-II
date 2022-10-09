@@ -1,5 +1,4 @@
 package br.com.ada.programacaowebii.aula.service;
-
 import br.com.ada.programacaowebii.aula.controller.vo.ClienteVO;
 import br.com.ada.programacaowebii.aula.model.Cliente;
 import br.com.ada.programacaowebii.aula.repository.ClienteRepository;
@@ -16,7 +15,11 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    RickAndMortyService rickAndMortyService;
+
     public Cliente criarCliente(Cliente cliente) {
+        cliente.setApelido(rickAndMortyService.getPersonagemPorNomeCliente(cliente.getNome()));
         return this.clienteRepository.saveAndFlush(cliente);
     }
 

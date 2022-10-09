@@ -1,8 +1,10 @@
 package br.com.ada.programacaowebii.aula.controller;
 
-import br.com.ada.programacaowebii.aula.controller.dto.ClienteDTO;
 import br.com.ada.programacaowebii.aula.controller.dto.ContaDTO;
 import br.com.ada.programacaowebii.aula.controller.vo.ContaVO;
+import br.com.ada.programacaowebii.aula.model.Cliente;
+import br.com.ada.programacaowebii.aula.model.Conta;
+import br.com.ada.programacaowebii.aula.service.ClienteContaService;
 import br.com.ada.programacaowebii.aula.service.ContaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,16 +14,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
-@RestController
+@Controller
 public class ContaControlller {
 
     @Autowired
+    private ClienteContaService clienteContaService;
+
+    @Autowired
     private ContaService contaService;
+
 
     @Operation(summary = "Criar conta", tags = "conta")
     @ApiResponses(value = {
@@ -36,9 +44,19 @@ public class ContaControlller {
 
     })
     @PostMapping("/conta")
-    public ResponseEntity<Void> criarConta(@Valid @RequestHeader(value = "cpf") String cpf, @RequestBody ContaVO contaVO) {
+    public ResponseEntity<String> criarConta(@Valid @RequestHeader(value = "cpf") String cpf, @RequestBody ContaVO contaVO) {
         //TODO - Criar conta
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Conta conta = new Conta();
+        Optional<Cliente> clienteOptional = clienteContaService.clienteRepository.findByCpf(cpf);
+        if(clienteOptional.isPresent()){
+            Cliente cliente = clienteOptional.get();
+            conta.setNumero(contaVO.getNumero());
+            conta.setDataCriacao(contaVO.getDataCriacao());
+            conta.setCliente(cliente);
+            contaService.criarConta(conta);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @Operation(summary = "Atualizar conta", tags = "conta")
